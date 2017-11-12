@@ -1,0 +1,11 @@
+<div 
+  style="display:inline-block;border:1px solid black" 
+  [style.height]="displayHeight" 
+  [style.width]="displayWidth"
+  >
+  <svg [attr.width]="displayWidth" [attr.height]="displayHeight">
+      <line *ngFor="let l of lines" [attr.x1]="l.p1.x" [attr.y1]="l.p1.y" [attr.x2]="l.p2.x" [attr.y2]="l.p2.y" stroke="lightgray" stroke-width="1" />
+      <circle *ngFor="let p of points" [attr.cx]="p.x" [attr.cy]="p.y" r="2" stroke="black" stroke-width="0" fill="black" />
+  </svg>
+</div>
+
