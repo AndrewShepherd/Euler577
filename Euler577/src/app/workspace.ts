@@ -1,3 +1,13 @@
+declare global {
+  // class IterableIterator<T> {
+  //   each(action: (t:T)=>void);
+  // }
+}
+
+
+
+
+
 export interface Point {
   x:number;
   y:number;
@@ -12,7 +22,7 @@ export interface Line {
 export class Workspace {
     n: number;
 
-    private *getVirtualRows() /*: IterableIterator<Point[]>*/ {
+    private *getVirtualRows() : IterableIterator<Point[]> {
       for(let r = 0; r <= this.n; ++r) {
         const p:Point[] = [];
         for(let c = 0; c <= this.n-r; ++c) {
@@ -32,18 +42,11 @@ export class Workspace {
     }
     let r1 = iteratorResult.value;
     iteratorResult = iterator.next();
-    if(iteratorResult.done) {
-      return;
-    }
-    let r2 = iteratorResult.value;
-    while(true) {
+    while(!iteratorResult.done) {
+      const r2 = iteratorResult.value;
       yield [r1, r2];
       r1 = r2;
       iteratorResult = iterator.next();
-      if(iteratorResult.done) {
-        return;
-      }
-      r2 = iteratorResult.value;
     }
   }
 
@@ -70,7 +73,6 @@ export class Workspace {
       var iteratorResult = rowPairsIterator.next();
       while(!iteratorResult.done) {
         const [r1, r2] = iteratorResult.value;
-        console.log(`virtualLines: r1.length=${r1.length} and r2.length=${r2.length}`);
         for(let i = 0; i < r1.length; ++i) {
           if(r1.length > i && r2.length > i) {
             result.push({

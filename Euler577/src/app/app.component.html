@@ -1,10 +1,12 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<a href="https://projecteuler.net/problem=577" target="_blank">Euler Problem 577</a>
-<br />
-<input type="number" [(ngModel)]="n" placeholder="n" />
+<div class="container">
 
+<p class="lead">This is experimenting with <a href="https://projecteuler.net/problem=577" target="_blank">Euler Problem 577</a></p>
 
-<app-workspace-view [n]="n"></app-workspace-view>
-<!--
-<workspaceView></workspaceView>
--->
+<div class="form" style="margin-bottom:12px">
+    <label for="n">n:</label>
+    <input id="n" type="number" [(ngModel)]="n" placeholder="n" />
+    <button class="btn btn-primary">Start Algorithm</button>
+</div>
+
+<app-workspace-view [workspace]="workspace"></app-workspace-view>
+</div>

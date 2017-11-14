@@ -13,16 +13,9 @@ export class WorkspaceViewComponent implements OnInit {
 
   constructor() { }
 
-  private readonly workspace:Workspace = new Workspace;
-
+  //private readonly workspace:Workspace = new Workspace;
   @Input()
-  public get n(): number {
-    return this.workspace.n;
-  }
-
-  public set n(value:number) {
-    this.workspace.n = Math.min(value, 40);
-  }
+  public workspace:Workspace;
 
   ngOnInit() {
   }
@@ -72,10 +65,7 @@ export class WorkspaceViewComponent implements OnInit {
       p1: t(l.p1),
       p2: t(l.p2)
     });
-    console.log("get lines invoked");
-    for(let r of result) {
-      console.log(`(${r.p1.x}, ${r.p1.y}), (${r.p2.x}, ${r.p2.y})`);
-    }
+    console.log("workspaceViewComponent.get lines invoked");
     return result;
   }
 }

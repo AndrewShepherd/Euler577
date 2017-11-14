@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Workspace } from './workspace';
+
 
 @Component({
   selector: 'app-root',
@@ -7,5 +9,20 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'Euler577';
-  n = 6;
+
+  workspace = new Workspace();
+
+  constructor() {
+    this.workspace.n = 6;
+  }
+
+  get n() : number {
+    console.log('app.component.n.get invoked');
+    return this.workspace.n;
+  }
+
+  set n(value: number) {
+    console.log('app.component.n.set invoked');
+    this.workspace.n = value;
+  }
 }
