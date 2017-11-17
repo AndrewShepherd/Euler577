@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewEncapsulation, Input } from '@angular/core';
 import { Point, Line, Workspace } from '../workspace';
+import { Algorithm } from '../algorithm';
 
 
 
@@ -16,6 +17,9 @@ export class WorkspaceViewComponent implements OnInit {
   //private readonly workspace:Workspace = new Workspace;
   @Input()
   public workspace:Workspace;
+
+  @Input()
+  public algorithm:Algorithm;
 
   ngOnInit() {
   }
@@ -61,11 +65,24 @@ export class WorkspaceViewComponent implements OnInit {
 
   get lines() : Line[] {
     const t = this.tranform;
-    const result = this.workspace.virtualLines.map(l => <Line>{
-      p1: t(l.p1),
-      p2: t(l.p2)
-    });
-    console.log("workspaceViewComponent.get lines invoked");
-    return result;
+    const linesArray:Line[] = [];
+    console.log("invoking workspaceViewComponent.get lines");
+    const iter = this.workspace.virtualLines;
+    for(let iterResult = iter.next();
+        !iterResult.done;
+        iterResult = iter.next()) {
+          linesArray.push(<Line> {
+            p1: t(iterResult.value.p1),
+            p2: t(iterResult.value.p2)
+          });          
+        }
+    return linesArray;
+  }
+
+  get markers() : Point[] {
+    const t = this.tranform;
+    const p = this.algorithm.markers;
+    console.log(`workspaceViewComponent.get markers invoked, length = ${p.length}`);
+    return p.map(t);
   }
 }

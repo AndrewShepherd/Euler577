@@ -19,21 +19,72 @@ export interface Line {
 }
 
 
+export class WorkspaceRow {
+  y: number;
+  xStart: number;
+  length: number;
+
+  private *generatePoints() : IterableIterator<Point> {
+    const last = this.lastPoint;
+    for(let p = this.firstPoint; p.x <= last.x; p = { x: p.x + 1, y: p.y }) {
+      yield p;
+    }
+  }
+
+  private * generatePointsReverse() : IterableIterator<Point> {
+    const first = this.firstPoint;
+    for(let p = this.lastPoint; p.x >= first.x; p = {x: p.x-1, y:p.y }) {
+      yield p;
+    }
+  }
+
+  public get firstPoint() : Point {
+    return {
+      x: this.xStart,
+      y: this.y
+    };
+  }
+
+  public get lastPoint() : Point {
+    return {
+      x:this.xStart + this.length-1,
+      y: this.y
+    }
+  }
+
+  public get points() : IterableIterator<Point> {
+    return this.generatePoints();
+  }
+
+  public get pointsReverse() : IterableIterator<Point> {
+    return this.generatePointsReverse();
+  }
+}
+
 export class Workspace {
     n: number;
 
-    private *getVirtualRows() : IterableIterator<Point[]> {
+    private generateRow(index:number) : WorkspaceRow {
+        const row = new WorkspaceRow();
+        row.y = index * Math.sqrt(3)/2;
+        row.xStart = index/2;
+        row.length = this.n-index + 1;    
+        return row;
+    }
+
+    private *getVirtualRows() : IterableIterator<WorkspaceRow> {
       for(let r = 0; r <= this.n; ++r) {
-        const p:Point[] = [];
-        for(let c = 0; c <= this.n-r; ++c) {
-          p.push({
-            x: c + r/2,
-            y: r * Math.sqrt(3)/2
-          });
-        }
-        yield p;
+        yield this.generateRow(r)
       }
     }
+
+    private * getVirtualRowsReverse() : IterableIterator<WorkspaceRow> {
+      for(let r = this.n; r >= 0; --r) {
+        yield this.generateRow(r);
+      }
+    }
+
+    
 
   private static *getAdjacentPairs<T>(iterator: IterableIterator<T>) : IterableIterator<T[]> {
     let iteratorResult = iterator.next();
@@ -59,38 +110,84 @@ export class Workspace {
       }    
     }
 
-  public get virtualLines() {
-      const result:Line[] = [];
-      Workspace.each(this.getVirtualRows(), (row) => {
-        if(row.length > 0) {
-          result.push({
-            p1: row[0],
-            p2: row[row.length-1]
-          });
-        }
-      });
-      const rowPairsIterator = Workspace.getAdjacentPairs(this.getVirtualRows());
-      var iteratorResult = rowPairsIterator.next();
-      while(!iteratorResult.done) {
-        const [r1, r2] = iteratorResult.value;
-        for(let i = 0; i < r1.length; ++i) {
-          if(r1.length > i && r2.length > i) {
-            result.push({
-              p1: r2[i],
-              p2: r1[i]
-            });
-          }
-          if(i > 0) {
-            result.push({
-              p1: r2[i-1],
-              p2: r1[i]
-            });
-          }
-        }
-        iteratorResult = rowPairsIterator.next();
-      }
-      return result;
+  private *generateHorizonalGridLines() : IterableIterator<Line> {
+    const iterable = this.getVirtualRows();
+    for(let iterResult = iterable.next(); !iterResult.done; iterResult = iterable.next()) {
+      yield {
+        p1: iterResult.value.firstPoint,
+        p2: iterResult.value.lastPoint
+      };
     }
+  }
+
+  private *generateForwardGridLines(): IterableIterator<Line> {
+      let iterRow = this.getVirtualRows();
+      let iterRowValue = iterRow.next();
+      let bottomRow = iterRowValue.value;   
+
+      const iterRowReverse = this.getVirtualRowsReverse();
+      const iterPoint = bottomRow.points;
+      for(let i = 0,
+            iPv = iterPoint.next(), 
+            iterRrv = iterRowReverse.next();
+          i < bottomRow.length-1; 
+          ++i, 
+            iPv = iterPoint.next(), 
+            iterRrv = iterRowReverse.next()) {
+        yield {
+          p1: iPv.value,
+          p2: iterRrv.value.lastPoint
+        };
+      } 
+  }
+
+  private *generateBackwardGridLines() {
+    console.log("generateBackwardGridLines");
+    let iterRow = this.getVirtualRows();
+    const bottomRow = iterRow.next().value;
+    const bottomRowIter = bottomRow.pointsReverse;
+    iterRow = this.getVirtualRowsReverse();
+    for(let i = 0,
+        ipv = bottomRowIter.next(),
+        rv = iterRow.next();
+        i < bottomRow.length-1 && !ipv.done && !rv.done;
+        ++i, ipv = bottomRowIter.next(), rv = iterRow.next()
+      ) {
+        const line = {
+          p1: ipv.value,
+          p2: rv.value.firstPoint
+        };
+        console.log(`generateBackwardGridLines: p1=(${line.p1.x},${line.p1.y}), p2=(${line.p2.x}, ${line.p2.y})`);
+        yield line;
+      }
+  }
+
+  private static* concat<T>(...iters: IterableIterator<T>[]) : IterableIterator<T> {
+    console.log('Workspace.concat. typeof(iters)=' + typeof(iters));
+    
+    for(let i = 0; i < iters.length; ++i) {
+      const iter = iters[i];
+      for(let iterResult = iter.next(); !iterResult.done; iterResult = iter.next()) {
+        yield iterResult.value;
+      }
+    }
+  }
+
+
+
+  private generateGridLines() : IterableIterator<Line> {
+    const iterOne = this.generateForwardGridLines();
+    const iterThree = this.generateBackwardGridLines();
+    const iterTwo = this.generateHorizonalGridLines();
+    console.log("Invoking Workspace.concat");
+    return Workspace.concat(iterOne, iterTwo, iterThree);
+  }
+
+  public get virtualLines() {
+    console.log("Invoking this.generateGridLines()");
+    
+      return this.generateGridLines();
+  }
 
 
     public get virtualPoints() : Point[] {
@@ -98,7 +195,12 @@ export class Workspace {
         let rows = this.getVirtualRows();
         let iteratorResult = rows.next();
         while(!iteratorResult.done) {
-            p = p.concat(iteratorResult.value);
+            const rowPoints = iteratorResult.value.points;
+            let ip = rowPoints.next();
+            while(!ip.done) {
+              p.push(ip.value);
+              ip = rowPoints.next();
+            }
             iteratorResult = rows.next();
         }
         return p;

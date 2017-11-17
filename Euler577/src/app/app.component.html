@@ -5,8 +5,9 @@
 <div class="form" style="margin-bottom:12px">
     <label for="n">n:</label>
     <input id="n" type="number" [(ngModel)]="n" placeholder="n" />
-    <button class="btn btn-primary">Start Algorithm</button>
+    <button class="btn btn-primary" *ngIf="!algorithm.isRunning" (click)="algorithm.start()" >Start Algorithm</button>
+    <button class="btn btn-warning" *ngIf="algorithm.isRunning" (click)="algorithm.stop()" >Stop Algorithm</button>
 </div>
 
-<app-workspace-view [workspace]="workspace"></app-workspace-view>
+<app-workspace-view [workspace]="workspace" [algorithm]="algorithm"></app-workspace-view>
 </div>
