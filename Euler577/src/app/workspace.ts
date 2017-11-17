@@ -52,6 +52,13 @@ export class WorkspaceRow {
     }
   }
 
+  public pointAt(n:number) : Point {
+    return {
+      x: this.xStart + n,
+      y: this.y
+    }
+  }
+
   public get points() : IterableIterator<Point> {
     return this.generatePoints();
   }
@@ -84,8 +91,10 @@ export class Workspace {
       }
     }
 
+    public rowAt(n:number) : WorkspaceRow {
+      return this.generateRow(n);
+    }
     
-
   private static *getAdjacentPairs<T>(iterator: IterableIterator<T>) : IterableIterator<T[]> {
     let iteratorResult = iterator.next();
     if(iteratorResult.done) {
@@ -157,38 +166,28 @@ export class Workspace {
           p1: ipv.value,
           p2: rv.value.firstPoint
         };
-        console.log(`generateBackwardGridLines: p1=(${line.p1.x},${line.p1.y}), p2=(${line.p2.x}, ${line.p2.y})`);
         yield line;
       }
   }
 
   private static* concat<T>(...iters: IterableIterator<T>[]) : IterableIterator<T> {
-    console.log('Workspace.concat. typeof(iters)=' + typeof(iters));
-    
-    for(let i = 0; i < iters.length; ++i) {
-      const iter = iters[i];
+    for(let iter of iters) {
       for(let iterResult = iter.next(); !iterResult.done; iterResult = iter.next()) {
         yield iterResult.value;
       }
     }
   }
 
-
-
   private generateGridLines() : IterableIterator<Line> {
     const iterOne = this.generateForwardGridLines();
     const iterThree = this.generateBackwardGridLines();
     const iterTwo = this.generateHorizonalGridLines();
-    console.log("Invoking Workspace.concat");
     return Workspace.concat(iterOne, iterTwo, iterThree);
   }
 
   public get virtualLines() {
-    console.log("Invoking this.generateGridLines()");
-    
       return this.generateGridLines();
   }
-
 
     public get virtualPoints() : Point[] {
         let p:Point[] = [];

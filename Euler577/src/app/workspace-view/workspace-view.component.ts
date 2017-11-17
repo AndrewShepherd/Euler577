@@ -63,18 +63,23 @@ export class WorkspaceViewComponent implements OnInit {
     return this.workspace.virtualPoints.map(t);
   }
 
+  private static transformLine(l:Line, t:(p:Point) => Point) {
+    return <Line>{
+      p1: t(l.p1),
+      p2: t(l.p2)
+    };
+  }
+
   get lines() : Line[] {
-    const t = this.tranform;
+    const pointTransform = this.tranform;
+    const lineTransform = (l:Line) => WorkspaceViewComponent.transformLine(l, pointTransform);
     const linesArray:Line[] = [];
     console.log("invoking workspaceViewComponent.get lines");
     const iter = this.workspace.virtualLines;
     for(let iterResult = iter.next();
         !iterResult.done;
         iterResult = iter.next()) {
-          linesArray.push(<Line> {
-            p1: t(iterResult.value.p1),
-            p2: t(iterResult.value.p2)
-          });          
+          linesArray.push(lineTransform(iterResult.value));          
         }
     return linesArray;
   }
@@ -84,5 +89,11 @@ export class WorkspaceViewComponent implements OnInit {
     const p = this.algorithm.markers;
     console.log(`workspaceViewComponent.get markers invoked, length = ${p.length}`);
     return p.map(t);
+  }
+  
+  get trialLines() : Line[] {
+    const pointTransform = this.tranform;
+    const lineTransform = (l:Line) => WorkspaceViewComponent.transformLine(l, pointTransform);
+    return this.algorithm.trialLines.map(tl => lineTransform(tl));    
   }
 }
