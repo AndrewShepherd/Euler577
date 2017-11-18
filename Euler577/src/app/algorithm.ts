@@ -2,33 +2,44 @@ import { Workspace, Point, Line } from "./workspace";
 import { Observable, Subscription } from "rxjs/Rx";
 
 
+export interface AlgorithmState {
+    markers: Point[];
+    lines: Line[];
+}
+
 export class Algorithm {
     public workspace: Workspace;
 
     private timerSubscription:Subscription;
 
-    private pointsIterable : IterableIterator<Point>;
-    private iteratorResult : IteratorResult<Point>;
+    private stateIterator : IterableIterator<AlgorithmState>;
+    private iteratorResult : IteratorResult<AlgorithmState>;
 
     private nextStep(stepNumber: number) {
-        this.iteratorResult = this.pointsIterable.next();
+        this.iteratorResult = this.stateIterator.next();
         if(this.iteratorResult.done) {
-            this.pointsIterable = this.generatePointIterator();
-            this.iteratorResult = this.pointsIterable.next();
+            this.stateIterator = this.generatePointIterator();
+            this.iteratorResult = this.stateIterator.next();
         }
     }
 
-    *generatePointIterator() : IterableIterator<Point> {
+    *generatePointIterator() : IterableIterator<AlgorithmState> {
         for(let r = 1; r <= this.workspace.n-2; ++r) {
             const row = this.workspace.rowAt(r);
             for(let c = 0; c < row.length-2; ++c) {
-                yield row.pointAt(c);
+                yield <AlgorithmState>{
+                    markers: [row.pointAt(c), this.stationaryPoint],
+                    lines: [{
+                        p1: row.pointAt(c),
+                        p2: this.stationaryPoint
+                    }] 
+                };
             }
         }
     }
 
     public get markers() : Point[] {
-        return this.iteratorResult ? [this.iteratorResult.value, this.stationaryPoint] : [];
+        return this.iteratorResult ? this.iteratorResult.value.markers : [];
     }
 
     private get stationaryPoint() : Point {
@@ -42,13 +53,7 @@ export class Algorithm {
         if(!this.iteratorResult) {
             return [];
         }
-        return [
-            <Line>{
-                p1: this.iteratorResult.value,
-                p2: this.stationaryPoint
-            }
-        ];
-        
+        return this.iteratorResult.value.lines;        
     }
 
     public get isRunning() {
@@ -57,14 +62,14 @@ export class Algorithm {
 
     public async start() {
         const timer = Observable.timer(0, 500);
-        this.pointsIterable = this.generatePointIterator();
+        this.stateIterator = this.generatePointIterator();
         this.timerSubscription = timer.subscribe(t => this.nextStep(t));
     }
 
     public stop() : void {
         this.timerSubscription.unsubscribe();
         this.timerSubscription = null;
-        this.pointsIterable = null;
+        this.stateIterator = null;
         this.iteratorResult = null;
     }
 }
