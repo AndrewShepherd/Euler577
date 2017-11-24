@@ -5,11 +5,13 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { WorkspaceViewComponent } from './workspace-view/workspace-view.component';
 import { FormsModule } from '@angular/forms';
+import { SolutionGeneratorComponent } from './solution-generator/solution-generator.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    WorkspaceViewComponent
+    WorkspaceViewComponent,
+    SolutionGeneratorComponent
   ],
   imports: [
     BrowserModule,

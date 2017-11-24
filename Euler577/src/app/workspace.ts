@@ -1,21 +1,10 @@
+import {Point, Line} from './geometry';
+
+
 declare global {
   // class IterableIterator<T> {
   //   each(action: (t:T)=>void);
   // }
-}
-
-
-
-
-
-export interface Point {
-  x:number;
-  y:number;
-}
-
-export interface Line {
-  p1: Point,
-  p2: Point
 }
 
 
@@ -39,17 +28,11 @@ export class WorkspaceRow {
   }
 
   public get firstPoint() : Point {
-    return {
-      x: this.xStart,
-      y: this.y
-    };
+    return this.pointAt(0);
   }
 
   public get lastPoint() : Point {
-    return {
-      x:this.xStart + this.length-1,
-      y: this.y
-    }
+    return this.pointAt(this.length-1);
   }
 
   public pointAt(n:number) : Point {
@@ -204,4 +187,14 @@ export class Workspace {
         }
         return p;
     };
+
+  public findRowAndColumn(p: Point) : { row: number, column: number} {
+    const row = p.y / (Math.sqrt(3)/2);
+    const rowStart = row/2;
+    const col = p.x-rowStart; 
+    return {
+      row: Math.round(row),
+      column: Math.round(col)
+    };
+  }
 }

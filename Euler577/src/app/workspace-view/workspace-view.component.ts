@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewEncapsulation, Input } from '@angular/core';
-import { Point, Line, Workspace } from '../workspace';
+import { Point, Line } from '../geometry';
+import { Workspace } from '../workspace';
 import { Algorithm } from '../algorithm';
 
 
@@ -95,5 +96,9 @@ export class WorkspaceViewComponent implements OnInit {
     const pointTransform = this.tranform;
     const lineTransform = (l:Line) => WorkspaceViewComponent.transformLine(l, pointTransform);
     return this.algorithm.trialLines.map(tl => lineTransform(tl));    
+  }
+
+  get text() : string {
+    return this.algorithm.text;
   }
 }
